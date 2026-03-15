@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto-backend/internal/handler"
+	"crypto-backend/internal/service"
 	"log"
 
 	"github.com/gin-contrib/cors"
@@ -19,14 +21,13 @@ func main() {
 		AllowCredentials: true,
 	}))
 
-	// Placeholder routes (will be linked later)
-	router.POST("api/encrypt", func(c *gin.Context) {
-		c.JSON(200, gin.H{"message": "encrypt endpoint ready"})
-	})
+	// Dependency Injection: Wire the service to the handler
+	cryptoService := service.NewCryptoService()
+	cryptoHandler := handler.NewCryptoHandler(cryptoService)
 
-	router.POST("api/decrypt", func(c *gin.Context) {
-		c.JSON(200, gin.H{"message": "decrypt endpoint ready"})
-	})
+	// Route mapping
+	router.POST("api/encrypt", cryptoHandler.Encrypt)
+	router.POST("api/decrypt", cryptoHandler.Decrypt)
 
 	log.Println("Server running on http://localhost:8080")
 	if err := router.Run(":8080"); err != nil {
