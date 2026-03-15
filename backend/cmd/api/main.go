@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto-backend/internal/crypto"
 	"crypto-backend/internal/handler"
 	"crypto-backend/internal/service"
 	"log"
@@ -10,6 +11,11 @@ import (
 )
 
 func main() {
+	// Initialize the real RSA keys on startup
+	if err := crypto.InitRSA(); err != nil {
+		log.Fatal("Failed to initialize RSA keys:", err)
+	}
+
 	router := gin.Default()
 
 	// CORS config to allow the React frontend

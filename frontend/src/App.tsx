@@ -69,7 +69,7 @@ function App() {
               Encrypt
             </button>
             <button
-              onClick={() => handleAction('encrypt')}
+              onClick={() => handleAction('decrypt')}
               className="flex-1 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition"
             >
               Decrypt
