@@ -23,8 +23,8 @@ function MainTab({
 }: MainTabProps) {
   return (
     <section className="panel single-panel">
-      <h2>Main Encrypt / Decrypt</h2>
-      <p className="subtext">Run any algorithm here. This tab only shows final output.</p>
+      <h2>Encrypt / Decrypt</h2>
+      <p className="subtext">Run any algorithm here.</p>
 
       <label htmlFor="mainAlgorithm">Algorithm</label>
       <select

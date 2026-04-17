@@ -128,7 +128,8 @@ h3 {
 }
 
 .single-panel {
-  max-width: 760px;
+  max-width: none;
+  width: 100%;
 }
 
 .rsa-layout {
@@ -286,6 +287,150 @@ button.ghost:hover:enabled {
   overflow-wrap: anywhere;
 }
 
+.rsa-diagram-wrap {
+  margin-top: 14px;
+  border: 1px solid #b8c9d3;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #eef8ff 0%, #e3f0fb 100%);
+  padding: 14px;
+}
+
+.rsa-caption {
+  margin-top: 2px;
+}
+
+.rsa-pipeline-map {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) auto minmax(120px, 1fr) auto minmax(120px, 1fr) auto minmax(120px, 1fr);
+  align-items: center;
+  gap: 6px;
+}
+
+.rsa-node {
+  border: 1px solid #9fb8cc;
+  border-radius: 10px;
+  background: #edf7ff;
+  padding: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #25455f;
+  text-align: center;
+  min-height: 56px;
+  display: grid;
+  place-items: center;
+}
+
+.rsa-node.active {
+  border-color: #4f8eb1;
+  background: #d8ecf8;
+  color: #0f425f;
+}
+
+.rsa-arrow {
+  color: #4a6880;
+  font-weight: 700;
+  text-align: center;
+}
+
+.rsa-key-strip {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.rsa-key-card,
+.rsa-eq-card {
+  border: 1px solid #adc1d1;
+  border-radius: 10px;
+  background: #f8fcff;
+  padding: 10px;
+}
+
+.rsa-key-card h4,
+.rsa-eq-card h4,
+.rsa-data-card h4,
+.rsa-mapping-board h4 {
+  margin: 0 0 6px;
+  font-size: 13px;
+}
+
+.rsa-key-card p,
+.rsa-eq-card p {
+  margin: 0;
+  font-size: 12px;
+  color: #2f4f64;
+}
+
+.rsa-key-meta {
+  margin-top: 6px !important;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-size: 11px !important;
+  word-break: break-all;
+}
+
+.rsa-eq-card code {
+  display: block;
+  margin-bottom: 6px;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-size: 12px;
+  color: #1d4e6c;
+}
+
+.rsa-data-board {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.rsa-data-card {
+  border: 1px solid #b4c7d5;
+  border-radius: 10px;
+  background: #f7fbff;
+  padding: 8px;
+  min-height: 92px;
+}
+
+.rsa-data-card.active {
+  border-color: #6694b0;
+  background: #e5f2fb;
+}
+
+.rsa-data-card code {
+  display: block;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-size: 11px;
+  color: #2f4c61;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.rsa-mapping-board {
+  margin-top: 10px;
+  border: 1px solid #b6c8d4;
+  border-radius: 10px;
+  background: #f8fcff;
+  padding: 10px;
+}
+
+.rsa-map-grid {
+  display: grid;
+  gap: 6px;
+}
+
+.rsa-map-row {
+  border: 1px dashed #9fb4c3;
+  border-radius: 8px;
+  background: #f1f8ff;
+  padding: 8px;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-size: 11px;
+  color: #27475f;
+  word-break: break-word;
+}
+
 .aes-diagram-wrap {
   margin-top: 14px;
   border: 1px solid #bccbaa;
@@ -345,6 +490,28 @@ button.ghost:hover:enabled {
   font-size: 13px;
 }
 
+.aes-lines-board {
+  margin-top: 10px;
+  border: 1px solid #b7c8a0;
+  border-radius: 12px;
+  background: #f9fff0;
+  padding: 10px;
+}
+
+.aes-lines-board h4 {
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+
+.aes-lines-board pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-size: 12px;
+  color: #2e4b1e;
+}
+
 .aes-matrix-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -398,9 +565,37 @@ button.ghost:hover:enabled {
   background: #eff9e0;
   color: #355123;
   font-size: 12px;
-  font-weight: 700;
   padding: 8px;
+  text-align: left;
+}
+
+.aes-stage-chip strong {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.aes-stage-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.aes-stage-cell {
+  border: 1px solid #b9cea0;
+  border-radius: 6px;
+  background: #f8ffef;
   text-align: center;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-size: 10px;
+  color: #355123;
+  padding: 4px 2px;
+}
+
+.aes-stage-note {
+  margin: 8px 0 0;
+  color: #3f5b2d;
+  font-size: 12px;
 }
 
 .des-diagram-wrap {
@@ -526,6 +721,38 @@ button.ghost:hover:enabled {
   font-size: 12px;
   font-weight: 600;
   color: #644931;
+}
+
+.des-f-box code,
+.des-xor-box code {
+  display: block;
+  margin-top: 6px;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-size: 10px;
+  font-weight: 500;
+  color: #4a3929;
+  word-break: break-all;
+}
+
+.des-round-result {
+  margin-top: 10px;
+  border: 1px solid #d3c19f;
+  border-radius: 10px;
+  background: #fff8ea;
+  padding: 10px;
+}
+
+.des-round-result h4 {
+  margin: 0 0 6px;
+  font-size: 13px;
+}
+
+.des-round-result code {
+  display: block;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-size: 11px;
+  color: #4a3929;
+  word-break: break-all;
 }
 
 .flow-header {
@@ -655,17 +882,21 @@ button.ghost:hover:enabled {
   }
 
   .aes-pipeline-map,
-  .des-pipeline-map {
+  .des-pipeline-map,
+  .rsa-pipeline-map {
     grid-template-columns: 1fr;
   }
 
   .aes-arrow,
-  .des-arrow {
+  .des-arrow,
+  .rsa-arrow {
     transform: rotate(90deg);
   }
 
   .des-feistel-board,
-  .aes-round-lane {
+  .aes-round-lane,
+  .rsa-key-strip,
+  .rsa-data-board {
     grid-template-columns: 1fr;
   }
 

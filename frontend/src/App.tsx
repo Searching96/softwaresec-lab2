@@ -26,7 +26,7 @@ import {
 } from './utils/flowBuilders';
 
 const MENU_TABS: Array<{ id: MenuTab; label: string }> = [
-  { id: 'main', label: 'Main Encrypt/Decrypt' },
+  { id: 'main', label: 'Main' },
   { id: 'rsa', label: 'RSA Visualization' },
   { id: 'aes', label: 'AES Visualization' },
   { id: 'des', label: 'DES Visualization' },
