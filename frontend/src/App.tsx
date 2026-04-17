@@ -1,100 +1,319 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import './App.css';
+import MainTab from './components/MainTab';
+import MenuBar from './components/MenuBar';
+import RsaVisualizationTab from './components/RsaVisualizationTab';
+import SymmetricVisualizationTab from './components/SymmetricVisualizationTab';
+import type {
+  AlgoFlow,
+  Algorithm,
+  CryptoAction,
+  MenuTab,
+  OverviewItem,
+  RsaFlow,
+  RsaTrack,
+  ToyKeyPair,
+} from './types/crypto';
+import { callCryptoApi } from './utils/api';
+import { generateToyKeyPair } from './utils/cryptoHelpers';
+import {
+  buildAesFlow,
+  buildBackendRsaFlow,
+  buildDesFlow,
+  buildToyRsaFlow,
+  runToyRsaAction,
+} from './utils/flowBuilders';
+
+const MENU_TABS: Array<{ id: MenuTab; label: string }> = [
+  { id: 'main', label: 'Main Encrypt/Decrypt' },
+  { id: 'rsa', label: 'RSA Visualization' },
+  { id: 'aes', label: 'AES Visualization' },
+  { id: 'des', label: 'DES Visualization' },
+];
 
 function App() {
-  const [text, setText] = useState('');
-  const [algorithm, setAlgorithm] = useState('RSA');
-  const [result, setResult] = useState('');
-  const [error, setError] = useState('');
+  const [menuTab, setMenuTab] = useState<MenuTab>('main');
 
-  const handleAction = async (action: 'encrypt' | 'decrypt') => {
-    setResult('');
-    setError('');
+  const [mainAlgorithm, setMainAlgorithm] = useState<Algorithm>('RSA');
+  const [mainInput, setMainInput] = useState('');
+  const [mainResult, setMainResult] = useState('');
+  const [mainError, setMainError] = useState('');
+  const [mainAction, setMainAction] = useState<CryptoAction | null>(null);
+
+  const [rsaTrack, setRsaTrack] = useState<RsaTrack>('backend');
+  const [rsaInput, setRsaInput] = useState('');
+  const [rsaResult, setRsaResult] = useState('');
+  const [rsaError, setRsaError] = useState('');
+  const [rsaAction, setRsaAction] = useState<CryptoAction | null>(null);
+  const [toyKeys, setToyKeys] = useState<ToyKeyPair>(() => generateToyKeyPair());
+  const [rsaFlow, setRsaFlow] = useState<RsaFlow | null>(null);
+  const [rsaStepIndex, setRsaStepIndex] = useState(0);
+
+  const [aesInput, setAesInput] = useState('');
+  const [aesResult, setAesResult] = useState('');
+  const [aesError, setAesError] = useState('');
+  const [aesAction, setAesAction] = useState<CryptoAction | null>(null);
+  const [aesFlow, setAesFlow] = useState<AlgoFlow | null>(null);
+  const [aesStepIndex, setAesStepIndex] = useState(0);
+
+  const [desInput, setDesInput] = useState('');
+  const [desResult, setDesResult] = useState('');
+  const [desError, setDesError] = useState('');
+  const [desAction, setDesAction] = useState<CryptoAction | null>(null);
+  const [desFlow, setDesFlow] = useState<AlgoFlow | null>(null);
+  const [desStepIndex, setDesStepIndex] = useState(0);
+
+  const rsaOverview = useMemo<OverviewItem[]>(
+    () => [
+      {
+        label: 'Public key',
+        info: 'Used for encryption: (e, n). Backend track uses server-generated keys.',
+      },
+      {
+        label: 'Private key',
+        info: 'Used for decryption: (d, n). Real private keys remain on backend.',
+      },
+      {
+        label: 'Core formula',
+        info: 'Encrypt c = m^e mod n. Decrypt m = c^d mod n.',
+      },
+      {
+        label: 'Two modes',
+        info: 'Backend mode shows real flow. Toy mode exposes tiny keys for tracing.',
+      },
+    ],
+    []
+  );
+
+  const aesOverview = useMemo<OverviewItem[]>(
+    () => [
+      {
+        label: 'Block size',
+        info: 'AES operates on 128-bit blocks (16 bytes).',
+      },
+      {
+        label: 'State matrix',
+        info: 'Each block is arranged into a 4x4 byte state for round processing.',
+      },
+      {
+        label: 'Round pipeline',
+        info: 'SubBytes, ShiftRows, MixColumns, AddRoundKey (with final-round variation).',
+      },
+      {
+        label: 'Reverse for decrypt',
+        info: 'Decryption applies inverse round transformations in reverse order.',
+      },
+    ],
+    []
+  );
+
+  const desOverview = useMemo<OverviewItem[]>(
+    () => [
+      {
+        label: 'Block size',
+        info: 'DES works on 64-bit blocks (8 bytes).',
+      },
+      {
+        label: 'Feistel split',
+        info: 'Each block splits into left and right 32-bit halves.',
+      },
+      {
+        label: '16 rounds',
+        info: 'Rounds repeatedly apply the Feistel function with round subkeys.',
+      },
+      {
+        label: 'Decrypt strategy',
+        info: 'Same round structure as encrypt, but subkeys are applied in reverse.',
+      },
+    ],
+    []
+  );
+
+  const handleMainAction = async (action: CryptoAction) => {
+    setMainResult('');
+    setMainError('');
+    setMainAction(action);
 
     try {
-      const response = await fetch(`http://localhost:8080/api/${action}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text, algorithm }),
-      });
+      const output = await callCryptoApi(action, mainInput, mainAlgorithm);
+      setMainResult(output);
+    } catch (err: unknown) {
+      setMainError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setMainAction(null);
+    }
+  };
 
-      const data = await response.json();
+  const handleRsaAction = async (action: CryptoAction) => {
+    setRsaResult('');
+    setRsaError('');
+    setRsaAction(action);
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Something went wrong');
+    try {
+      if (rsaTrack === 'toy') {
+        const toyResult = runToyRsaAction(action, rsaInput, toyKeys);
+        const flow = buildToyRsaFlow(action, rsaInput, toyResult, toyKeys);
+        setRsaResult(toyResult);
+        setRsaFlow(flow);
+        setRsaStepIndex(0);
+        return;
       }
 
-      setResult(data.result);
-    } catch (err: any) {
-      setError(err.message)
+      const output = await callCryptoApi(action, rsaInput, 'RSA');
+      const flow = buildBackendRsaFlow(action, rsaInput, output);
+      setRsaResult(output);
+      setRsaFlow(flow);
+      setRsaStepIndex(0);
+    } catch (err: unknown) {
+      setRsaError(err instanceof Error ? err.message : 'Unknown error');
+      setRsaFlow(null);
+    } finally {
+      setRsaAction(null);
+    }
+  };
+
+  const handleAesAction = async (action: CryptoAction) => {
+    setAesResult('');
+    setAesError('');
+    setAesAction(action);
+
+    try {
+      const output = await callCryptoApi(action, aesInput, 'AES');
+      const flow = buildAesFlow(action, aesInput, output);
+      setAesResult(output);
+      setAesFlow(flow);
+      setAesStepIndex(0);
+    } catch (err: unknown) {
+      setAesError(err instanceof Error ? err.message : 'Unknown error');
+      setAesFlow(null);
+    } finally {
+      setAesAction(null);
+    }
+  };
+
+  const handleDesAction = async (action: CryptoAction) => {
+    setDesResult('');
+    setDesError('');
+    setDesAction(action);
+
+    try {
+      const output = await callCryptoApi(action, desInput, 'DES');
+      const flow = buildDesFlow(action, desInput, output);
+      setDesResult(output);
+      setDesFlow(flow);
+      setDesStepIndex(0);
+    } catch (err: unknown) {
+      setDesError(err instanceof Error ? err.message : 'Unknown error');
+      setDesFlow(null);
+    } finally {
+      setDesAction(null);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">Crypto App</h1>
+    <div className="app-shell">
+      <div className="bg-grid" />
 
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Input Text</label>
-            <textarea
-              className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
-              rows={3}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Enter text here..."
-            />
-          </div>
+      <main className="container">
+        <header className="hero-header">
+          <h1 className="eyebrow w-full h-full text-4xl">Interactive Crypto Lab</h1>
+        </header>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Algorithm</label>
-            <select
-              className="w-full border border-gray-300 rounded-md p-2 bg-white"
-              value={algorithm}
-              onChange={(e) => setAlgorithm(e.target.value)}
-            >
-              <option value="RSA">RSA</option>
-              <option value="AES">AES</option>
-              <option value="DES">DES</option>
-            </select>
-          </div>
+        <MenuBar tabs={MENU_TABS} activeTab={menuTab} onSelectTab={setMenuTab} />
 
-          <div className="flex space-x-4 pt-2">
-            <button
-              onClick={() => handleAction('encrypt')}
-              className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition"
-            >
-              Encrypt
-            </button>
-            <button
-              onClick={() => handleAction('decrypt')}
-              className="flex-1 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition"
-            >
-              Decrypt
-            </button>
-          </div>
+        {menuTab === 'main' && (
+          <MainTab
+            algorithm={mainAlgorithm}
+            onAlgorithmChange={(algorithm) => {
+              setMainAlgorithm(algorithm);
+              setMainResult('');
+              setMainError('');
+            }}
+            inputValue={mainInput}
+            onInputChange={setMainInput}
+            result={mainResult}
+            error={mainError}
+            activeAction={mainAction}
+            onAction={handleMainAction}
+          />
+        )}
 
-          {error && (
-            <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md text-sm border border-red-200">
-              <strong>Error:</strong> {error}
-            </div>
-          )}
+        {menuTab === 'rsa' && (
+          <RsaVisualizationTab
+            track={rsaTrack}
+            onTrackChange={(track) => {
+              setRsaTrack(track);
+              setRsaInput('');
+              setRsaResult('');
+              setRsaError('');
+              setRsaFlow(null);
+              setRsaStepIndex(0);
+            }}
+            toyKeys={toyKeys}
+            onRegenerateToyKeys={() => {
+              setToyKeys(generateToyKeyPair());
+              setRsaResult('');
+              setRsaError('');
+              setRsaFlow(null);
+              setRsaStepIndex(0);
+            }}
+            inputValue={rsaInput}
+            onInputChange={setRsaInput}
+            result={rsaResult}
+            error={rsaError}
+            activeAction={rsaAction}
+            onAction={handleRsaAction}
+            overviewItems={rsaOverview}
+            flow={rsaFlow}
+            stepIndex={rsaStepIndex}
+            onStepChange={setRsaStepIndex}
+          />
+        )}
 
-          {result && (
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Result</label>
-              <textarea
-                readOnly
-                className="w-full border border-gray-300 rounded-md p-2 bg-gray-50"
-                rows={3}
-                value={result}
-              />
-            </div>
-          )}
-        </div>
-      </div>
+        {menuTab === 'aes' && (
+          <SymmetricVisualizationTab
+            title="AES Visualization"
+            description="Run AES action and inspect how data maps into state blocks and round flow."
+            inputId="aesInput"
+            inputLabel="AES Input"
+            inputPlaceholder="Encrypt: enter plaintext. Decrypt: enter AES ciphertext from this app."
+            inputValue={aesInput}
+            onInputChange={setAesInput}
+            result={aesResult}
+            error={aesError}
+            activeAction={aesAction}
+            onAction={handleAesAction}
+            overviewItems={aesOverview}
+            flow={aesFlow}
+            stepIndex={aesStepIndex}
+            onStepChange={setAesStepIndex}
+            placeholderText="Run AES encrypt/decrypt to generate a step-by-step visualization."
+            timelineAriaLabel="AES step timeline"
+          />
+        )}
+
+        {menuTab === 'des' && (
+          <SymmetricVisualizationTab
+            title="DES Visualization"
+            description="Run DES action and inspect the Feistel split and round narrative."
+            inputId="desInput"
+            inputLabel="DES Input"
+            inputPlaceholder="Encrypt: enter plaintext. Decrypt: enter DES ciphertext from this app."
+            inputValue={desInput}
+            onInputChange={setDesInput}
+            result={desResult}
+            error={desError}
+            activeAction={desAction}
+            onAction={handleDesAction}
+            overviewItems={desOverview}
+            flow={desFlow}
+            stepIndex={desStepIndex}
+            onStepChange={setDesStepIndex}
+            placeholderText="Run DES encrypt/decrypt to generate a step-by-step visualization."
+            timelineAriaLabel="DES step timeline"
+          />
+        )}
+      </main>
     </div>
   );
 }
