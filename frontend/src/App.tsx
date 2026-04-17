@@ -3,7 +3,8 @@ import './App.css';
 import MainTab from './components/MainTab';
 import MenuBar from './components/MenuBar';
 import RsaVisualizationTab from './components/RsaVisualizationTab';
-import SymmetricVisualizationTab from './components/SymmetricVisualizationTab';
+import DesVisualizationTab from './components/DesVisualizationTab';
+import AesVisualizationTab from './components/AesVisualizationTab';
 import type {
   AlgoFlow,
   Algorithm,
@@ -271,12 +272,7 @@ function App() {
         )}
 
         {menuTab === 'aes' && (
-          <SymmetricVisualizationTab
-            title="AES Visualization"
-            description="Run AES action and inspect how data maps into state blocks and round flow."
-            inputId="aesInput"
-            inputLabel="AES Input"
-            inputPlaceholder="Encrypt: enter plaintext. Decrypt: enter AES ciphertext from this app."
+          <AesVisualizationTab
             inputValue={aesInput}
             onInputChange={setAesInput}
             result={aesResult}
@@ -287,18 +283,11 @@ function App() {
             flow={aesFlow}
             stepIndex={aesStepIndex}
             onStepChange={setAesStepIndex}
-            placeholderText="Run AES encrypt/decrypt to generate a step-by-step visualization."
-            timelineAriaLabel="AES step timeline"
           />
         )}
 
         {menuTab === 'des' && (
-          <SymmetricVisualizationTab
-            title="DES Visualization"
-            description="Run DES action and inspect the Feistel split and round narrative."
-            inputId="desInput"
-            inputLabel="DES Input"
-            inputPlaceholder="Encrypt: enter plaintext. Decrypt: enter DES ciphertext from this app."
+          <DesVisualizationTab
             inputValue={desInput}
             onInputChange={setDesInput}
             result={desResult}
@@ -309,8 +298,6 @@ function App() {
             flow={desFlow}
             stepIndex={desStepIndex}
             onStepChange={setDesStepIndex}
-            placeholderText="Run DES encrypt/decrypt to generate a step-by-step visualization."
-            timelineAriaLabel="DES step timeline"
           />
         )}
       </main>
